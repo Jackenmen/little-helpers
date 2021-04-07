@@ -33,6 +33,20 @@ and it works no matter what name the default branch has.
 Note: This works with an assumption that the remote for upstream is called `upstream`
 and that the remote for your fork is called `origin`.
 
+### git-checkoutpr
+
+This script fetches and checks out a merge commit of the pull request
+with a given number.
+
+This can optionally be passed with a branch.
+
+Usage: `git checkoutpr <pr_number> [branch]`
+
+Personally, I have this command aliased to `git copr` to type even less :)
+
+Note: only works on GitHub and other services who provide merge commit refs
+in a format of: `pull/PR_NUMBER/merge`
+
 ## License
 
 Please see [LICENSE file](LICENSE) for details.
