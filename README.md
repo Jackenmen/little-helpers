@@ -47,6 +47,16 @@ Personally, I have this command aliased to `git copr` to type even less :)
 Note: only works on GitHub and other services who provide merge commit refs
 in a format of: `pull/PR_NUMBER/merge`
 
+### git-checkoutdefault
+
+This script just checks out the default branch.
+I do it all the time, so why not make it simpler?
+
+Personally, I have this command aliased to `git cod` to type even less :)
+
+Note: This works with an assumption that
+the default branch is set on a remote called `origin`
+
 ## License
 
 Please see [LICENSE file](LICENSE) for details.
