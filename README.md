@@ -21,6 +21,18 @@ After you have the repository cloned into a folder, you just need to
 add the `REPO_PATH/bin` folder to your `PATH` so that the scripts in it
 can be detected by git and auto-added into its namespace.
 
+## Available scripts
+
+### git-pp
+
+This script is basically a shorter version of
+`git pull upstream default_branch && git push`
+with a few extra things that ensure, you're in the right branch
+and it works no matter what name the default branch has.
+
+Note: This works with an assumption that the remote for upstream is called `upstream`
+and that the remote for your fork is called `origin`.
+
 ## License
 
 Please see [LICENSE file](LICENSE) for details.
