@@ -25,7 +25,10 @@
 
 git fetch upstream || exit 1
 
-default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+default_branch=$(
+    git ls-remote --symref upstream HEAD |
+    awk '/^ref:/ {sub(/refs\/heads\//, "", $2); print $2}'
+)
 current_branch=$(git branch --show-current)
 
 if [[ $current_branch != "$default_branch" ]]; then
