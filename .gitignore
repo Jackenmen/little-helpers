@@ -1,0 +1,5 @@
+# Exclude binary files
+*.exe
+
+# Ignore the ignore file for AHK scripts
+start_all_ahk_scripts.ignore
