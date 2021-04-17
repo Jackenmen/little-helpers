@@ -3,12 +3,13 @@
 [![Subscribe on Patreon](https://img.shields.io/badge/Support%20me%20on-Patreon-orange.svg?logo=patreon)](https://www.patreon.com/Jackenmen)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A few *little* scripts for things I do often so that I can type less.
+A few *little* scripts for things I do often so that I can type less
+or make fewer clicks.\
 I'm just a bit lazy...
 
 Only tested on Windows.\
 `git-` scripts are Bash scripts so they should work on Unix systems as well,
-but the Batch scripts will obviously only work on Windows.
+but the AutoHotkey and Batch scripts will obviously only work on Windows.
 
 ## Usage/Installation
 
@@ -18,6 +19,8 @@ To use the scripts in this repo, you should first clone it:
 git clone https://github.com/jack1142/little-helpers
 ```
 
+### Scripts from the `bin/` directory
+
 After you have the repository cloned into a folder, you just need to
 add the `REPO_PATH/bin` folder to your `PATH`.
 
@@ -25,7 +28,22 @@ Scripts prefixed with `git-` are meant to be ran through `git`,
 i.e. as `git pp`, not `git-pp`.\
 This is possible thanks to git's support for external commands.
 
-## Available scripts
+### Scripts from the `ahk_scripts/` directory
+
+AutoHotkey scripts need to be lanched on system startup.\
+For ease, I made *another* AHK script (`start_all_ahk_scripts.ahk`)
+that starts all the scripts from the `ahk_scripts` folder.\
+You should just add a shortcut to it in the `shell:startup` folder,
+and the script will ensure that any scripts in the `ahk_scripts` folder,
+will launch during system startup.
+
+If you want to ignore some of those scripts,
+you can put the names (including the `.ahk` extension) of them
+in the `start_all_ahk_scripts.ignore` file.
+
+---
+
+## Available scripts (`bin/` directory)
 
 ### sp (Windows-only)
 
@@ -69,6 +87,10 @@ Personally, I have this command aliased to `git cod` to type even less :)
 
 Note: This works with an assumption that
 the default branch is set on a remote called `origin`
+
+## Available AHK scripts (`ahk_scripts/` directory)
+
+None
 
 ## License
 
