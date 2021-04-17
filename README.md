@@ -42,9 +42,10 @@ and that the remote for your fork is called `origin`.
 This script fetches and checks out a merge commit of the pull request
 with a given number.
 
-This can optionally be passed with a branch.
-
 Usage: `git checkoutpr <pr_number> [branch]`
+
+When `branch` is passed, the script will additionally create a branch
+from PR's merge branch, rather than only do a checkout to a dangling commit.
 
 Personally, I have this command aliased to `git copr` to type even less :)
 
