@@ -94,10 +94,10 @@ the default branch is set on a remote called `origin`
 
 This script adds 2 hotkeys:
 
-- ``Ctrl+` `` Open new Windows Terminal tab/window
-              in the path of active Explorer window
-- ``Win+` ``  Focus/minimize the current Windows Terminal window
-              or start a new session
+- `` Ctrl+` `` - Open new Windows Terminal tab/window
+in the path of active Explorer window
+- `` Win+` `` - Focus/minimize the current Windows Terminal window
+or start a new session
 
 ## License
 
