@@ -1,25 +1,29 @@
-# git-helpers
+# little-helpers
 
 [![Subscribe on Patreon](https://img.shields.io/badge/Support%20me%20on-Patreon-orange.svg?logo=patreon)](https://www.patreon.com/Jackenmen)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-A few small git scripts for things I do often so that I can type less.
+A few *little* scripts for things I do often so that I can type less.
 I'm just a bit lazy...
 
-Only tested on Windows but these are Bash scripts
-so they should run just fine on Unix systems.
+Only tested on Windows.\
+`git-` scripts are Bash scripts so they should work on Unix systems as well,
+but the Batch scripts will obviously only work on Windows.
 
 ## Usage/Installation
 
 To use the scripts in this repo, you should first clone it:
 
 ```sh
-git clone https://github.com/jack1142/git-helpers
+git clone https://github.com/jack1142/little-helpers
 ```
 
 After you have the repository cloned into a folder, you just need to
-add the `REPO_PATH/bin` folder to your `PATH` so that the scripts in it
-can be detected by git and auto-added into its namespace.
+add the `REPO_PATH/bin` folder to your `PATH`.
+
+Scripts prefixed with `git-` are meant to be ran through `git`,
+i.e. as `git pp`, not `git-pp`.\
+This is possible thanks to git's support for external commands.
 
 ## Available scripts
 
