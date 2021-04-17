@@ -27,6 +27,14 @@ This is possible thanks to git's support for external commands.
 
 ## Available scripts
 
+### sp (Windows-only)
+
+This script splits a pane vertically in Windows Terminal
+and runs the given command in it,
+while keeping focus on the pane it was ran from.
+
+Usage: `sp <command...>`
+
 ### git-pp
 
 This script is basically a shorter version of
