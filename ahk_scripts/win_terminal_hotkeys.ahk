@@ -25,6 +25,9 @@
 ListLines Off
 ; the above are just a bunch of optimizations
 
+; Make MouseGetPos return position relative to the entire screen, not active window.
+CoordMode, Mouse, Screen
+
 _getActiveExplorerPath() {
     ; source: https://www.autohotkey.com/boards/viewtopic.php?f=6&t=69925
     explorerHwnd := WinActive("ahk_class CabinetWClass")
@@ -38,6 +41,46 @@ _getActiveExplorerPath() {
         if (window.hwnd == explorerHwnd)
             return window.Document.Folder.Self.Path
 }
+_getMouseMonitorIndex() {
+    MouseGetPos, x, y
+    SysGet, monitorCount, MonitorCount
+    Loop, %monitorCount% {
+        SysGet, bounds, Monitor, %A_Index%
+        if (boundsLeft <= x
+            && boundsTop <= y
+            && x <= boundsRight
+            && y <= boundsBottom)
+        {
+            return %A_Index%
+        }
+    }
+    ; this should never happen but just in case...
+    SysGet, primaryMonitorIndex, MonitorPrimary
+    return %primaryMonitorIndex%
+}
+_waitAndMoveWindowsTerminalWindowToMouse() {
+    WinWait, ahk_class CASCADIA_HOSTING_WINDOW_CLASS
+    _moveWindowToMouse()
+}
+_moveWindowToMouse(winTitle := "") {
+    monitorIndex := _getMouseMonitorIndex()
+    SysGet, bounds, MonitorWorkArea, %monitorIndex%
+    MouseGetPos, mouseX, mouseY
+    WinGetPos, x, y, windowWidth, windowHeight, %winTitle%
+
+    newX := mouseX - (windowWidth / 2)
+    newY := mouseY - (windowHeight / 2)
+    if (newX > (boundsRight - windowWidth))
+        newX := boundsRight - windowWidth
+    if (newY > (boundsBottom - windowHeight))
+        newY := boundsBottom - windowHeight
+    if (newX < boundsLeft)
+        newX := boundsLeft
+    if (newY < boundsTop)
+        newY := boundsTop
+
+    WinMove, %winTitle%,, %newX%, %newY%
+}
 
 ; This was supposed to be Ctrl+Alt+T but Windows plays a bell signal when I try it...
 ^`:: ; Ctrl+`
@@ -48,6 +91,7 @@ _getActiveExplorerPath() {
         if (path)
             args .= "-d """ path """"
         Run wt.exe %args%
+        _waitAndMoveWindowsTerminalWindowToMouse()
     }
 
 #`:: ; Win+`
@@ -58,12 +102,18 @@ _getActiveExplorerPath() {
         {
             activeWtHwnd := WinActive("ahk_id " wtHwnd)
             if (activeWtHwnd)
+            {
                 WinMinimize, ahk_id %activeWtHwnd%
+            }
             else
+            {
                 WinActivate, ahk_id %wtHwnd%
+                _moveWindowToMouse("ahk_id" wtHwnd)
+            }
         }
         else
         {
             Run wt.exe
+            _waitAndMoveWindowsTerminalWindowToMouse()
         }
     }
