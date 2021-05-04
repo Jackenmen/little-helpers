@@ -88,6 +88,21 @@ Personally, I have this command aliased to `git cod` to type even less :)
 Note: This works with an assumption that
 the default branch is set on a remote called `origin`
 
+### git-createbranch
+
+This script creates a branch and automatically "creates" and tracks the remote branch.
+
+The remote branch created by the script is fake
+as it isn't actually pushed to the remote
+and only exists locally before first `git push`.
+
+Usage: `git createbranch <branch_name>`
+
+Personally, I have this command aliased to `git cb` to type even less :)
+
+Note: TThis works with an assumption that the remote
+which you want to create the branches on is called `origin`.
+
 ## Available AHK scripts (`ahk_scripts/` directory)
 
 ### win_terminal_hotkeys
