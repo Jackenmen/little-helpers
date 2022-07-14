@@ -1,5 +1,5 @@
 ; This script adds 2 hotkeys:
-; - ``Ctrl+` `` Open new Windows Terminal tab/window
+; - ``Ctrl+Shift+` `` Open new Windows Terminal tab/window
 ;               in the path of active Explorer window
 ; - ``Win+` ``  Focus/minimize the current Windows Terminal window
 ;               or start a new session
@@ -83,7 +83,7 @@ _moveWindowToMouse(winTitle := "") {
 }
 
 ; This was supposed to be Ctrl+Alt+T but Windows plays a bell signal when I try it...
-^`:: ; Ctrl+`
+^+`:: ; Ctrl+Shift+`
     openWindowsTerminalHere() {
         ; Opens new Windows Terminal tab/window in the path of active Explorer window
         path := _getActiveExplorerPath()
