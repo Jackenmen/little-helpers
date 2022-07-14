@@ -53,6 +53,17 @@ while keeping focus on the pane it was ran from.
 
 Usage: `sp <command...>`
 
+### sshvbox (Windows-only)
+
+This script allows you to start an SSH connection to a VirtualBox virtual machine
+which uses the name that you provided to the command. It is assumed that the machine
+is running an SSH server and all you really need is to get its IP address.
+
+Handy as it doesn't require you to know VM's IP machine
+as it's being fetched from VirtualBox automatically.
+
+Usage: `sshvbox <machine name>`
+
 ### git-pp
 
 This script is basically a shorter version of
