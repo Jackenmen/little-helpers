@@ -93,27 +93,3 @@ _moveWindowToMouse(winTitle := "") {
         Run wt.exe %args%
         _waitAndMoveWindowsTerminalWindowToMouse()
     }
-
-#`:: ; Win+`
-    toggleWindowsTerminalWindowFocus() {
-        ; Focus/minimize the current Windows Terminal window or start a new session
-        wtHwnd := WinExist("ahk_class CASCADIA_HOSTING_WINDOW_CLASS")
-        if (wtHwnd)
-        {
-            activeWtHwnd := WinActive("ahk_id " wtHwnd)
-            if (activeWtHwnd)
-            {
-                WinMinimize, ahk_id %activeWtHwnd%
-            }
-            else
-            {
-                WinActivate, ahk_id %wtHwnd%
-                _moveWindowToMouse("ahk_id" wtHwnd)
-            }
-        }
-        else
-        {
-            Run wt.exe
-            _waitAndMoveWindowsTerminalWindowToMouse()
-        }
-    }
