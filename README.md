@@ -99,6 +99,18 @@ Personally, I have this command aliased to `git cod` to type even less :)
 Note: This works with an assumption that
 the default branch is set on a remote called `origin`
 
+### git-br
+
+This script shows a deduplicated list of local and remote branches along with
+tracking remote and last commit's description, date, and its short hash.
+
+The output is sorted in reverse chronological order and additionally favours
+branches that are local-only or are only on the `origin` remote by showing them
+before all other branches. This is meant to make it easier to find *your* recent work.
+
+Each entry on the branch list takes two lines which, while making it less concise,
+allows it to show more of the commit message and is, arguably, more readable.
+
 ### git-createbranch
 
 This script creates a branch and automatically "creates" and tracks the remote branch.

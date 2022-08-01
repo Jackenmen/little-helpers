@@ -1,0 +1,160 @@
+#!/bin/bash
+#
+# This script shows a deduplicated list of local and remote branches along with
+# tracking remote and last commit's description, date, and its short hash.
+#
+# The output is sorted in reverse chronological order and additionally favours
+# branches that are local-only or are only on the `origin` remote by showing them
+# before all other branches. This is meant to make it easier to find *your* recent work.
+#
+# Each entry on the branch list takes two lines which, while making it less concise,
+# allows it to show more of the commit message and is, arguably, more readable.
+#
+#
+# Copyright 2022 Jakub Kuczys (https://github.com/jack1142)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+if [ "$#" -ne 0 ]; then
+    git branch "$@"
+    exit $?
+fi
+
+COLUMNS="$(tput cols)"
+color_branch_current=$'\e[32m'
+color_branch_local=$'\e[34m'
+color_branch_remote=$'\e[31m'
+color_diff_commit=$'\e[33m'
+reset=$'\e[39m'
+
+declare -A local_branches remote_branches
+eval "$(
+    git for-each-ref \
+        --format='local_branches[%(refname:short)]=%(upstream:remotename)' \
+        --shell refs/heads
+    git for-each-ref \
+        --format='remote_branches[%(refname:short)]=%(refname:lstrip=3)' \
+        --shell refs/remotes
+)"
+
+declare -A branches
+
+for branch_name in "${!local_branches[@]}"; do
+    remote_name="${local_branches[$branch_name]}"
+    branches[$branch_name]="|$remote_name|"
+done
+
+for ref in "${!remote_branches[@]}"; do
+    branch_name="${remote_branches[$ref]}"
+    remote_name="${ref%/"$branch_name"}"
+    if [ "$branch_name" = HEAD ]; then
+        unset 'remote_branches[$ref]'
+    elif [ -v "branches[$branch_name]" ]; then
+        if ! [[ ${branches[$branch_name]} == *"|$remote_name|"* ]]; then
+            branches[$branch_name]="${branches[$branch_name]}$remote_name|"
+        fi
+    else
+        branches[$branch_name]="|$remote_name|"
+    fi
+done
+
+declare -A dates hashes messages
+for branch_name in "${!branches[@]}"; do
+    remotes="${branches[$branch_name]}"
+    remote_name="${remotes:1}"
+    remote_name="${remote_name%%|*}"
+    if [ -v "local_branches[$branch_name]" ]; then
+        prefix=''
+    else
+        prefix="$remote_name/"
+    fi
+
+    IFS=/ read -r date hash message < <(
+        git log --no-walk=unsorted --format=%ct/%h/%s "$prefix$branch_name" --
+    )
+    dates[$branch_name]="$date"
+    hashes[$branch_name]="$hash"
+    messages[$branch_name]="$message"
+    hlen=${#hash}
+    (( hwidth = hlen > hwidth ? hlen : hwidth ))
+done
+
+mapfile -t ordered < <(
+    for branch_name in "${!branches[@]}"; do
+        remotes="${branches[$branch_name]}"
+        if [ "$remotes" = "||" ]; then
+            is_origin_only=1
+        elif [ "$remotes" = "|origin|" ]; then
+            is_origin_only=1
+        elif [ "$remotes" = "||origin|" ]; then
+            is_origin_only=1
+        else
+            is_origin_only=0
+        fi
+        printf '%d\t%d\t%s\n' "$is_origin_only" "${dates[$branch_name]}" "$branch_name"
+    done | sort -rn -t $'\t' -k1,1 -k2,2 | cut -f3-
+)
+
+current=$(git symbolic-ref -q --short HEAD)
+
+for branch_name in "${ordered[@]}"; do
+    branch_color="$color_branch_local"
+    current_branch_indicator=' '
+    if [ "$branch_name" = "$current" ]; then
+        branch_color="$color_branch_current"
+        current_branch_indicator='*'
+    fi
+    msg="${messages[$branch_name]:0:COLUMNS-hwidth-5}"
+    if [ "$msg" != "${messages[$branch_name]}" ]; then
+        msg="${msg:0:-3}..."
+    fi
+
+    tracking_remote="${local_branches[$branch_name]}"
+    remotes="${branches[$branch_name]}"
+    if [ "$remotes" = '||' ]; then
+        prefix=''
+    else
+        IFS='|' read -ra remote_list <<< "${remotes:1:-1}"
+        if [ "${#remote_list[@]}" -eq 1 ]; then
+            if [ "${remote_list[0]}" != "$tracking_remote" ]; then
+                prefix="$color_branch_remote${remote_list[0]}/$reset"
+            else
+                prefix="$branch_color${remote_list[0]}/$reset"
+            fi
+        else
+            prefix="$color_branch_remote{$reset"
+            if [ "${remote_list[0]}" != "$tracking_remote" ]; then
+                prefix+="$color_branch_remote${remote_list[0]}$reset"
+            else
+                prefix+="$branch_color${remote_list[0]}$reset"
+            fi
+            for remote_name in "${remote_list[@]:1}"; do
+                prefix+="$color_branch_remote,$reset"
+                if [ "$remote_name" != "$tracking_remote" ]; then
+                    prefix+="$color_branch_remote$remote_name$reset"
+                else
+                    prefix+="$branch_color$remote_name$reset"
+                fi
+            done
+            prefix+="$color_branch_remote}/$reset"
+        fi
+    fi
+
+    printf '%(%Y-%m-%d)T %s%s\n  %s %s %s\n' \
+        "${dates[$branch_name]}" \
+        "$prefix" \
+        "$branch_color$branch_name$reset" \
+        "$current_branch_indicator" \
+        "$color_diff_commit${hashes[$branch_name]}$reset" \
+        "$msg"
+done | less -F
