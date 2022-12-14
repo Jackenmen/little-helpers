@@ -39,11 +39,16 @@ if ! [[ $pullRequestNumber =~ ^[1-9][0-9]*$ ]]; then
    exit 1
 fi
 
+remote_name='upstream'
+if ! git config remote.upstream.url; then
+    remote_name='origin'
+fi
+
 if [ $# -gt 1 ]; then
     branch=$2
-    git fetch upstream "+refs/pull/$pullRequestNumber/merge:$branch" || exit 1
+    git fetch "$remote_name" "+refs/pull/$pullRequestNumber/merge:$branch" || exit 1
     git checkout "$branch" || exit 1
 else
-    git fetch upstream "+refs/pull/$pullRequestNumber/merge" || exit 1
+    git fetch "$remote_name" "+refs/pull/$pullRequestNumber/merge" || exit 1
     git checkout FETCH_HEAD || exit 1
 fi
