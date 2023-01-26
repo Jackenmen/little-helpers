@@ -157,4 +157,4 @@ for branch_name in "${ordered[@]}"; do
         "$current_branch_indicator" \
         "$color_diff_commit${hashes[$branch_name]}$reset" \
         "$msg"
-done | less -F
+done | less -FR
