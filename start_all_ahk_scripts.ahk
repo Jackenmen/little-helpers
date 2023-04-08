@@ -5,7 +5,7 @@
 ; in the `start_all_ahk_scripts.ignore` file.
 ;
 ;
-; Copyright 2021-present Jakub Kuczys (https://github.com/jack1142)
+; Copyright 2021-present Jakub Kuczys (https://github.com/Jackenmen)
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.

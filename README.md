@@ -1,6 +1,6 @@
 # little-helpers
 
-[![Sponsor on GitHub](https://img.shields.io/github/sponsors/jack1142?logo=github)](https://github.com/sponsors/jack1142)
+[![Sponsor on GitHub](https://img.shields.io/github/sponsors/Jackenmen?logo=github)](https://github.com/sponsors/Jackenmen)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 A few *little* scripts for things I do often so that I can type less
@@ -16,7 +16,7 @@ but the AutoHotkey and Batch scripts will obviously only work on Windows.
 To use the scripts in this repo, you should first clone it:
 
 ```sh
-git clone https://github.com/jack1142/little-helpers
+git clone https://github.com/Jackenmen/little-helpers
 ```
 
 ### Scripts from the `bin/` directory
@@ -129,4 +129,4 @@ and use my work as long as you credit me.
 ---
 
 > Jakub Kuczys &nbsp;&middot;&nbsp;
-> GitHub [@jack1142](https://github.com/jack1142)
+> GitHub [@Jackenmen](https://github.com/Jackenmen)
