@@ -23,5 +23,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+if ! default_branch=$(git rev-parse --abbrev-ref origin/HEAD 2>/dev/null); then
+    echo 'origin/HEAD not set, querying the remote to determine its default branch...'
+    git remote set-head origin -a
+    if ! default_branch=$(git rev-parse --abbrev-ref origin/HEAD); then
+        exit 1
+    fi
+fi
+default_branch="${default_branch#origin/}"
 git checkout "$default_branch" || exit 1
