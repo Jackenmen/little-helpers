@@ -1,0 +1,105 @@
+#!/usr/bin/bash
+#
+# This scripts run a temporary VM with the given Linux image.
+#
+# Image's default user is set up with the `~/.ssh/id_rsa` key and additionally,
+# `vm` user with `vm` password and the aforementioned key is also created.
+#
+# See documentation of `vm-image-add` for details about image management.
+#
+# Usage: `vm-run <image_name>`
+#
+# The domain (VM) name will be set to `tmp-<image_name>`, optionally suffixed with
+# a number (`tmp-<image_name>-2`) when a machine with same name exists.
+#
+#
+# Copyright 2024 Jakub Kuczys (https://github.com/Jackenmen)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eo pipefail
+
+DELETE_DOMAIN=0
+
+help() {
+    echo 'Usage: vm-run <image_name>'
+}
+
+cleanup() {
+    if [[ "$DELETE_DOMAIN" -eq 1 ]]; then
+        echo "Undefining VM's domain..."
+        virsh undefine "$domain_name"
+        echo 'Shutting down VM...'
+        if ! virsh shutdown "$domain_name" 2>/dev/null; then
+            echo 'VM was already powered off.'
+        fi
+    fi
+    echo "Removing VM's temporary directory..."
+    rm -rf "$vm_dir"
+    echo 'Removed.'
+}
+
+image_name=$1
+if [[ -z "$image_name" ]]; then
+    help
+    exit 2
+fi
+
+vm-image-fetch "$image_name"
+
+vm_dir=$(mktemp -d)
+trap cleanup EXIT
+chgrp libvirt-qemu "$vm_dir"
+chmod 0770 "$vm_dir"
+base_image_file="${XDG_CACHE_HOME:-$HOME/.cache}/little-helpers-vm-images/$image_name.img"
+
+image_file="$vm_dir/disk.img"
+qemu-img convert -O qcow2 "$base_image_file" "$image_file"
+qemu-img resize "$image_file" 50G
+chgrp libvirt-qemu "$image_file"
+chmod 0660 "$image_file"
+
+user_data_file="$vm_dir/user-data"
+{
+    echo '#cloud-config'
+    echo 'power_state:'
+    echo '  mode: poweroff'
+    echo '  condition: true'
+    echo 'ssh_authorized_keys:'
+    echo "  - $(<"$HOME/.ssh/id_rsa.pub")"
+    echo 'users:'
+    echo '  - default'
+    echo '  - name: vm'
+    echo '    plain_text_passwd: vm'
+    echo '    lock_passwd: false'
+    echo '    sudo: ALL=(ALL) NOPASSWD:ALL'
+    echo '    shell: /bin/bash'
+    echo '    ssh_authorized_keys:'
+    echo "      - $(<"$HOME/.ssh/id_rsa.pub")"
+} > "$user_data_file"
+
+domain_name="tmp-$image_name"
+i=1
+while virsh dominfo "$domain_name" 2>/dev/null; do
+    domain_name="tmp-$image_name-$i"
+done
+
+DELETE_DOMAIN=1
+virt-install \
+    --memory 2048 --osinfo linux2016 \
+    --name "$domain_name" \
+    --events on_reboot=restart \
+    --cloud-init "user-data=$user_data_file" \
+    --disk "$image_file"
+
+virsh start --console "$domain_name"

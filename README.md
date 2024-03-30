@@ -7,9 +7,9 @@ A few *little* scripts for things I do often so that I can type less
 or make fewer clicks.\
 I'm just a bit lazy...
 
-Only tested on Windows.\
-`git-` scripts are Bash scripts so they should work on Unix systems as well,
-but the AutoHotkey and Batch scripts will obviously only work on Windows.
+Scripts that aren't OS-specific (`bin/virt-*`, `bin/*.cmd`, `ahk_scripts/*`) have been tested on Linux and Windows.\
+`bin/virt-*` scripts are Linux-specific and require `libvirt` and `virtinst` packages.\
+`bin/*.cmd` and `ahk_scripts/*` scripts are Windows-specific.
 
 ## Usage/Installation
 
@@ -110,6 +110,57 @@ before all other branches. This is meant to make it easier to find *your* recent
 
 Each entry on the branch list takes two lines which, while making it less concise,
 allows it to show more of the commit message and is, arguably, more readable.
+
+### vm-run
+
+This scripts run a temporary VM with the given Linux image.
+
+Image's default user is set up with the `~/.ssh/id_rsa` key and additionally,
+`vm` user with `vm` password and the aforementioned key is also created.
+
+See documentation of `vm-image-add` for details about image management.
+
+Usage: `vm-run <image_name>`
+
+The domain (VM) name will be set to `tmp-<image_name>`, optionally suffixed with
+a number (`tmp-<image_name>-2`) when a machine with same name exists.
+
+### vm-connect
+
+Connect to a VM created by `vm-run` or `libvirt`.
+
+In case of VMs created by `vm-run`, `<vm_name>` is equivalent to image name
+with a `tmp-` prefix and an optional `-N` suffix when multiple VMs with same name
+are running at the same time, e.g. `tmp-ubuntu2204` or `tmp-ubuntu2204-2`.
+
+Usage: `vm-connect <vm_name>`
+
+### vm-image-add
+
+Add a Linux VM image for use by `vm-run`.
+
+Usage: `vm-image-add <image_name> <sums_url> <sum_type> <filename_pattern>`
+
+The script expects to be able to download a Linux image based on
+a provided `CHECKSUMS` file in a format returned by `sha256sum`/`sha512sum` program
+ran with or without `--tag` option. `<filename_pattern>` is used to extract
+the relevant checksum. This setup is generally supported by the data that is provided
+by the distro maintainers though there are 2 notable outliers:
+- Red Hat Enterprise Linux - requires subscription
+- Oracle Linux - does not provide checksum file in a parsable format
+
+You can find examples for different distros at:
+https://github.com/Jackenmen/dotfiles/tree/main/private_dot_config/little-helpers-vm-images
+
+### vm-image-fetch
+
+Fetch latest Linux VM image (added through `vm-image-add`) with the given name.
+
+This tool is typically invoked automatically.
+
+Usage: `vm-image-fetch [-f] <image_name>`
+
+Without the `-f` flag, the image only gets fetched when it isn't already in cache.
 
 ## Available AHK scripts (`ahk_scripts/` directory)
 

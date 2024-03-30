@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# Fetch latest Linux VM image (added through `vm-image-add`) with the given name.
+#
+# This tool is typically invoked automatically.
+#
+# Usage: `vm-image-fetch [-f] <image_name>`
+#
+# Without the `-f` flag, the image only gets fetched when it isn't already in cache.
+#
+#
+# Copyright 2024 Jakub Kuczys (https://github.com/Jackenmen)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eo pipefail
+
+help() {
+    echo 'Usage: vm-image-fetch [-f] <image_name>'
+}
+
+force_download=0
+OPTIND=1
+while getopts 'f' flag; do
+    case "$flag" in
+        f)
+            force_download=1
+            ;;
+        *)
+            help
+            exit 2
+            ;;
+    esac
+done
+shift "$((OPTIND-1))"
+
+image_name=$1
+if [[ -z "$image_name" ]]; then
+    help
+    exit 2
+fi
+
+image_cfg_dir="${XDG_CONFIG_HOME:-$HOME/.config}/little-helpers-vm-images"
+image_file="$image_cfg_dir/$image_name"
+if [[ ! -f "$image_file" ]]; then
+    echo 'ERROR: Image with this name does not exist!'
+    exit 2
+fi
+
+sums_url=$(sed '2q;d' "$image_file")
+if [[ -z "$sums_url" ]]; then
+    if [[ ! -f "$image_file" ]]; then
+        echo 'ERROR: No sum URL set but the image does not already exist.'
+        exit 1
+    fi
+    echo 'Using cached image as no sums URL is defined.'
+    exit 0
+fi
+
+sum_type=$(sed '3q;d' "$image_file")
+filename_pattern=$(sed '4q;d' "$image_file")
+
+checksums=$(curl -L "$sums_url")
+checksums+=$(echo '' && echo "$checksums" | sed -nE "s/^${sum_type^^} \(($filename_pattern)\) = ([^ \t]+)\$/\2 \1/p")
+matching_files=$(echo "$checksums" | grep -P "^[^ \t]+[ \t]+\*?$filename_pattern\$")
+if [[ "$(echo "$matching_files" | wc -l)" -ne 1 ]]; then
+    echo 'ERROR: Expected only one filename to match but got these matches instead:'
+    echo "$matching_files"
+    exit 1
+fi
+
+base_url="${sums_url%/*}"
+new_checksum=$(echo "$matching_files" | awk '{print $1}')
+filename=$(echo "$matching_files" | awk '{print $2}')
+filename="${filename#\*}"
+image_url="$base_url/$filename"
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/little-helpers-vm-images"
+mkdir -p "$cache_dir"
+old_checksum=$( (cat "$cache_dir/$image_name.${sum_type}sum" 2>/dev/null || echo '') | awk '{print $1}' )
+
+if [[ "$force_download" -eq 1 || "$old_checksum" != "$new_checksum" ]]; then
+    echo 'Downloading new version of the image...'
+    wget -O "$cache_dir/$image_name.img" "$image_url"
+    echo "$new_checksum  $image_name.img" > "$cache_dir/$image_name.${sum_type}sum"
+    echo 'Image downloaded and cached.'
+else
+    echo 'Cached image already up-to-date.'
+fi

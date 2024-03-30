@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+#
+# Connect to a VM created by `vm-run` or `libvirt`.
+#
+# In case of VMs created by `vm-run`, `<vm_name>` is equivalent to image name
+# with a `tmp-` prefix and an optional `-N` suffix when multiple VMs with same name
+# are running at the same time, e.g. `tmp-ubuntu2204` or `tmp-ubuntu2204-2`.
+#
+# Usage: `vm-connect <vm_name>`
+#
+#
+# Copyright 2024 Jakub Kuczys (https://github.com/Jackenmen)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eo pipefail
+
+help() {
+    echo 'Usage: vm-connect <vm_name>'
+}
+
+vm_name=$1
+if [[ -z "$vm_name" ]]; then
+    help
+    exit 2
+fi
+
+vm_ip=$(virsh domifaddr "$vm_name" | awk -F'[ /]+' '/^[[:blank:]]vnet/ {print $5}' | head -1)
+
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "vm@$vm_ip"

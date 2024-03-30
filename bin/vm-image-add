@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Add a Linux VM image for use by `vm-run`.
+#
+# Usage: `vm-image-add <image_name> <sums_url> <sum_type> <filename_pattern>`
+#
+# The script expects to be able to download a Linux image based on
+# a provided `CHECKSUMS` file in a format returned by `sha256sum`/`sha512sum` program
+# ran with or without `--tag` option. `<filename_pattern>` is used to extract
+# the relevant checksum. This setup is generally supported by the data that is provided
+# by the distro maintainers though there are 2 notable outliers:
+# - Red Hat Enterprise Linux - requires subscription
+# - Oracle Linux - does not provide checksum file in a parsable format
+#
+# You can find examples for different distros at:
+# https://github.com/Jackenmen/dotfiles/tree/main/private_dot_config/little-helpers-vm-images
+#
+#
+# Copyright 2024 Jakub Kuczys (https://github.com/Jackenmen)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eo pipefail
+
+help() {
+    echo 'Usage: vm-image-add <image_name> <sums_url> <sum_type> <filename_pattern>'
+}
+
+image_name=$1
+if [[ -z "$image_name" ]]; then
+    help
+    exit 2
+fi
+sums_url=$2
+if [[ -z "$sums_url" ]]; then
+    help
+    exit 2
+fi
+sum_type=$3
+if [[ -z "$sum_type" ]]; then
+    help
+    exit 2
+fi
+filename_pattern=$4
+if [[ -z "$filename_pattern" ]]; then
+    help
+    exit 2
+fi
+
+image_cfg_dir="${XDG_CONFIG_HOME:-$HOME/.config}/little-helpers-vm-images"
+mkdir -p "$image_cfg_dir"
+image_file="$image_cfg_dir/$image_name"
+if [[ -e "$image_file" ]]; then
+    echo 'Image with this name already exists:'
+    echo "- Image name: $(sed '1q;d' "$image_file")"
+    echo "- Checksums file URL: $(sed '2q;d' "$image_file")"
+    echo "- Checksum type: $(sed '3q;d' "$image_file")"
+    echo "- Filename pattern: $(sed '4q;d' "$image_file")"
+    exit 1
+fi
+
+{
+    echo "$image_name"
+    echo "$sums_url"
+    echo "$sum_type"
+    echo "$filename_pattern"
+} > "$image_file"
+
+if ! vm-image-fetch "$image_name"; then
+    exit_code=$?
+    rm "$image_file"
+    exit "$exit_code"
+fi
