@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# Show information about a Linux VM image available for use by `vm-run`.
+#
+# Usage: `vm-image-info <image_name>`
+#
+#
+# Copyright 2024 Jakub Kuczys (https://github.com/Jackenmen)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eo pipefail
+
+help() {
+    echo 'Usage: vm-image-info <image_name>'
+}
+
+image_name=$1
+if [[ -z "$image_name" ]]; then
+    help
+    exit 2
+fi
+
+image_cfg_dir="${XDG_CONFIG_HOME:-$HOME/.config}/little-helpers-vm-images"
+mkdir -p "$image_cfg_dir"
+image_file="$image_cfg_dir/$image_name"
+if ! [[ -e "$image_file" ]]; then
+    echo 'Image with the given name does not exist!'
+    exit 2
+fi
+echo "- Image name: $(sed '1q;d' "$image_file")"
+echo "- Checksums file URL: $(sed '2q;d' "$image_file")"
+echo "- Checksum type: $(sed '3q;d' "$image_file")"
+echo "- Filename pattern: $(sed '4q;d' "$image_file")"
