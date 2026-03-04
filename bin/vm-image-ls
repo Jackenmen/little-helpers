@@ -24,5 +24,5 @@ set -eo pipefail
 image_cfg_dir="${XDG_CONFIG_HOME:-$HOME/.config}/little-helpers-vm-images"
 mkdir -p "$image_cfg_dir"
 for image_path in "$image_cfg_dir"/*; do
-    basename "$image_path"
+    printf '\x1b]8;;file://%s%s\x07%s\x1b]8;;\x07\n' "$(hostname)" "$image_path" "$(basename "$image_path")"
 done
