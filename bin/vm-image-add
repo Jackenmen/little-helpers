@@ -76,8 +76,11 @@ fi
     echo "$filename_pattern"
 } > "$image_file"
 
-if ! vm-image-fetch "$image_name"; then
+if vm-image-fetch "$image_name"; then
+    echo 'Image added.'
+else
     exit_code=$?
+    echo 'Failed to add the image.'
     rm "$image_file"
     exit "$exit_code"
 fi

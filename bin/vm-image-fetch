@@ -70,7 +70,7 @@ fi
 sum_type=$(sed '3q;d' "$image_file")
 filename_pattern=$(sed '4q;d' "$image_file")
 
-checksums=$(curl -L "$sums_url")
+checksums=$(curl -L "$sums_url" --fail-with-body)
 checksums+=$(echo '' && echo "$checksums" | sed -nE "s/^${sum_type^^} \(($filename_pattern)\) = ([^ \t]+)\$/\2 \1/p")
 matching_files=$(echo "$checksums" | grep -P "^[^ \t]+[ \t]+\*?$filename_pattern\$")
 if [[ "$(echo "$matching_files" | wc -l)" -ne 1 ]]; then
