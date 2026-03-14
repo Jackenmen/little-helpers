@@ -91,7 +91,17 @@ old_checksum=$( (cat "$cache_dir/$image_name.${sum_type}sum" 2>/dev/null || echo
 
 if [[ "$force_download" -eq 1 || "$old_checksum" != "$new_checksum" ]]; then
     echo 'Downloading new version of the image...'
-    wget -O "$cache_dir/$image_name.img" "$image_url"
+    final_location="$cache_dir/$image_name.img"
+    tmp_download_location="$final_location.tmp"
+    wget -O "$tmp_download_location" "$image_url"
+    mime_type=$(file --mime-type --brief "$tmp_download_location")
+    if [[ "$mime_type" == 'application/x-xz' ]]; then
+        echo 'The downloaded image is xz-compressed, extracting...'
+        xz -dc < "$tmp_download_location" > "$final_location"
+        rm "$tmp_download_location"
+    else
+        mv "$tmp_download_location" "$final_location"
+    fi
     echo "$new_checksum  $image_name.img" > "$cache_dir/$image_name.${sum_type}sum"
     echo 'Image downloaded and cached.'
 else
