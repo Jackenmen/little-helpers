@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout repository
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
 
       # Setup Python and install pre-commit
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.8"
       - name: Install pre-commit
@@ -22,14 +22,14 @@ jobs:
       # Load cached pre-commit environment
       - name: set PY
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
-      - uses: actions/cache@v2
+      - uses: actions/cache@v5
         with:
           path: ~/.cache/pre-commit
           key: pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}
 
       # Register problem matchers
       - name: Register problem matchers
-        uses: lumaxis/shellcheck-problem-matchers@v1
+        uses: lumaxis/shellcheck-problem-matchers@v2
 
       # Run pre-commit
       - name: Run pre-commit
