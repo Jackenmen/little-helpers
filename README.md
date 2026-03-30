@@ -111,6 +111,22 @@ before all other branches. This is meant to make it easier to find *your* recent
 Each entry on the branch list takes two lines which, while making it less concise,
 allows it to show more of the commit message and is, arguably, more readable.
 
+### git-stash-keep
+
+This script allows you to save your changes without committing to git stash
+without having those changes get reverted after like with regular `git stash`.
+Essentially works as sort of a checkpoint for backup purposes.
+
+Usage: `git stash-keep [-u | --include-untracked] [(-m | --message) <stash_commit_message>]`
+
+This is basically a bit smarter version of
+`git stash store $(git stash create) -m 'your message'`
+which also automatically appends the branch name to the commit
+and has a bit more user-friendly error messages.
+
+Note: One notable missing feature in `stash-keep` from regular `stash`
+is `--staged` flag.
+
 ### vm-run
 
 This scripts run a temporary VM with the given Linux image.

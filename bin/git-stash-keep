@@ -1,0 +1,80 @@
+#!/bin/bash
+#
+# This script allows you to save your changes without committing to git stash
+# without having those changes get reverted after like with regular `git stash`.
+# Essentially works as sort of a checkpoint for backup purposes.
+#
+# Usage: `git stash-keep [-u | --include-untracked] [(-m | --message) <stash_commit_message>]`
+#
+# This is basically a bit smarter version of
+# `git stash store $(git stash create) -m 'your message'`
+# which also automatically appends the branch name to the commit
+# and has a bit more user-friendly error messages.
+#
+# Note: One notable missing feature in `stash-keep` from regular `stash`
+# is `--staged` flag.
+#
+#
+# Copyright 2026 Jakub Kuczys (https://github.com/Jackenmen)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -eo pipefail
+
+message=()
+include_untracked=0
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -m|--message)
+            message+=("$1")
+            shift
+            ;;
+        -u|--include-untracked)
+            include_untracked=1
+            shift
+            ;;
+        --no-include-untracked)
+            include_untracked=0
+            shift
+            ;;
+        -*)
+            echo "Unknown option $1"
+            exit 2
+            ;;
+        *)
+            echo "Unexpected argument $1"
+            exit 2
+            ;;
+    esac
+done
+
+untracked=()
+if [[ "$include_untracked" == 1 ]]; then
+    while IFS= read -r -d '' file; do
+        untracked+=("$file")
+    done < <(git ls-files -z -o --exclude-standard)
+fi
+if (( ${#untracked[@]} )); then
+    git add "${untracked[@]}"
+fi
+
+object_name=$(git stash create "${message[@]}")
+if [[ -z "$object_name" ]]; then
+    echo 'No local changes to save'
+    exit 1
+fi
+if (( ${#untracked[@]} )); then
+    git reset "${untracked[@]}"
+fi
+generated_message=$(git log -n 1 --format=%B "$object_name")
+git stash store "$object_name" -m "$generated_message"
