@@ -185,6 +185,8 @@ output the HTML comparison to a temporary directory and open it in
 the default web browser.
 
 The path arguments can be HTTP URLs or paths to local files.
+If either of the path arguments is missing,
+you'll be asked for it interactively.
 
 ## Available AHK scripts (`ahk_scripts/` directory)
 
