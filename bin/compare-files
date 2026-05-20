@@ -1,0 +1,59 @@
+#!/bin/bash
+#
+# This script is a basic wrapper around diffoscope configured to
+# output the HTML comparison to a temporary directory and open it in
+# the default web browser.
+#
+# The path arguments can be HTTP URLs or paths to local files.
+#
+#
+# Copyright 2026 Jakub Kuczys (https://github.com/Jackenmen)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -xeo pipefail
+
+args=()
+base_dir=$(mktemp -d)
+output_dir="$base_dir/html-output"
+files_dir="$base_dir/files-to-compare"
+
+file_count=0
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        https://*|http://*)
+            dir_prefix="$files_dir/$file_count"
+            wget --restrict-file-names=ascii -P "$dir_prefix" "$1"
+            for file in "$dir_prefix"/*; do
+                args+=("$file")
+            done
+            file_count=$((file_count + 1))
+            shift
+            ;;
+        *)
+            args+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if diffoscope --no-default-limits --max-page-diff-block-lines 10000 --html-dir "$output_dir" "${args[@]}"; then
+    exit_code=0
+else
+    exit_code=$?
+fi
+if [[ $exit_code -ne 1 ]]; then
+    exit $exit_code
+fi
+python3 -m webbrowser "$output_dir/index.html"
+exit $exit_code

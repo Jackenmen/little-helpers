@@ -178,6 +178,14 @@ Usage: `vm-image-fetch [-f] <image_name>`
 
 Without the `-f` flag, the image only gets fetched when it isn't already in cache.
 
+### compare-files
+
+This script is a basic wrapper around diffoscope configured to
+output the HTML comparison to a temporary directory and open it in
+the default web browser.
+
+The path arguments can be HTTP URLs or paths to local files.
+
 ## Available AHK scripts (`ahk_scripts/` directory)
 
 ### win_terminal_hotkeys
