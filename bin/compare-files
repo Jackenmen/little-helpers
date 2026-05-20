@@ -21,7 +21,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -xeo pipefail
+set -eo pipefail
 
 args=()
 base_dir=$(mktemp -d)
@@ -33,7 +33,7 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         https://*|http://*)
             dir_prefix="$files_dir/$file_count"
-            wget --restrict-file-names=ascii -P "$dir_prefix" "$1"
+            wget -q --show-progress --restrict-file-names=ascii -P "$dir_prefix" "$1"
             for file in "$dir_prefix"/*; do
                 args+=("$file")
             done
