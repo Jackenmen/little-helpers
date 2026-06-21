@@ -34,7 +34,8 @@ if [[ -z "$vm_name" ]]; then
     help
     exit 2
 fi
+shift
 
 vm_ip=$(virsh domifaddr "$vm_name" | awk -F'[ /]+' '/^[[:blank:]]vnet/ {print $5}' | head -1)
 
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "vm@$vm_ip"
+ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no "vm@$vm_ip" "$@"
