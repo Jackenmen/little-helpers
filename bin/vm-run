@@ -72,6 +72,9 @@ chmod 0660 "$image_file"
 user_data_file="$vm_dir/user-data"
 {
     echo '#cloud-config'
+    echo 'packages:'
+    echo '  - bash'
+    echo '  - sudo'
     echo 'power_state:'
     echo '  mode: poweroff'
     echo '  condition: true'
